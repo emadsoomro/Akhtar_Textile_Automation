@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Akhtar Textile Automation</title>
+</head>
+<body>
+    <h1>Akhtar Textile Automation</h1>
+
+    <button id="myButton">Start Automation</button>
+
+    <p id="responseText"></p>
+
+    <script>
+        document.getElementById('myButton').addEventListener('click', async function() {
+            const response = await fetch('/execute-automation', {
+                method: 'GET'
+            });
+            const result = await response.json();
+            document.getElementById('responseText').innerText = result.message;
+        });
+    </script>
+</body>
+</html>

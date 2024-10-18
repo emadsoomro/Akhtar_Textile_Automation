@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Akhtar Textile Automation</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        /* Optional: Add spinner styling */
+        .spinner-border {
+            display: none; /* Hide the spinner by default */
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2 class="text-center mt-4">Akhtar Textile Automation</h2>
+    <ul class="nav nav-tabs mt-4" id="myTab" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" id="akhtar-tab" data-toggle="tab" href="#akhtar" role="tab" aria-controls="akhtar" aria-selected="true">Akhtar Textile Automation</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="damco-tab" data-toggle="tab" href="#damco" role="tab" aria-controls="damco" aria-selected="false">DAMCO Automation</a>
+        </li>
+    </ul>
+    <div class="tab-content" id="myTabContent">
+        <div class="tab-pane fade show active" id="akhtar" role="tabpanel" aria-labelledby="akhtar-tab">
+            <h4 class="mt-3">Akhtar Textile Automation</h4>
+            <form id="akhtarForm" action="/AT-execute" method="POST" enctype="multipart/form-data" onsubmit="showProcessing('akhtarExecuteBtn')">
+                <input type="file" class="form-control-file mb-3" id="browse_AT" name="file_AT" required>
+                <div class="form-group">
+                    <label for="username_AT">Username:</label>
+                    <input type="text" class="form-control" id="username_AT" name="username_AT" placeholder="Username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password_AT">Password:</label>
+                    <input type="password" class="form-control" id="password_AT" name="password_AT" placeholder="Password" required>
+                </div>
+                <button type="submit" class="btn btn-primary" id="akhtarExecuteBtn">Execute</button>
+                <div class="spinner-border text-primary" role="status" id="spinnerAkhtar">
+                    <span class="sr-only">Processing...</span>
+                </div>
+            </form>
+        </div>
+
+        <div class="tab-pane fade" id="damco" role="tabpanel" aria-labelledby="damco-tab">
+            <h4 class="mt-3">DAMCO Automation</h4>
+            <form id="damcoForm" method="POST" enctype="multipart/form-data" onsubmit="showProcessing('damcoExecuteBtn')">
+                <input type="file" class="form-control-file mb-3" id="browse_damco" name="file_damco">
+                <div class="form-group">
+                    <label for="username_damco">Username:</label>
+                    <input type="text" class="form-control" id="username_damco" name="username_damco" placeholder="Username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password_damco">Password:</label>
+                    <input type="password" class="form-control" id="password_damco" name="password_damco" placeholder="Password" required>
+                </div>
+                <button type="submit" formaction="/damco-execute" class="btn btn-primary" id="damcoExecuteBtn">Execute</button>
+                <button type="submit" formaction="/damco-ammend" class="btn btn-primary">Ammend</button>
+                <div class="spinner-border text-primary" role="status" id="spinnerDamco">
+                    <span class="sr-only">Processing...</span>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script>
+    function showProcessing(buttonId) {
+        // Change button text to "Processing..."
+        var btn = document.getElementById(buttonId);
+        btn.disabled = true;  // Disable button to prevent multiple submissions
+        btn.innerHTML = 'Processing...';
+
+        // Show spinner
+        if (buttonId === 'akhtarExecuteBtn') {
+            document.getElementById('spinnerAkhtar').style.display = 'inline-block';
+        } else if (buttonId === 'damcoExecuteBtn') {
+            document.getElementById('spinnerDamco').style.display = 'inline-block';
+        }
+    }
+</script>
+
+</body>
+</html>
+

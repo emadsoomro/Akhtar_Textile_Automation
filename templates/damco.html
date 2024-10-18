@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Damco Automation</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+</head>
+<body>
+
+<div class="container mt-5">
+    <h2 class="text-center">Damco Automation Result</h2>
+
+    {% if error %}
+        <div class="alert alert-danger text-center">
+            {{ error }}
+        </div>
+    {% else %}
+        <table class="table table-bordered mt-4" id="poTable">
+            <thead>
+                <tr>
+                    <th>PO#</th>
+                    <th>Plan-HOD</th>
+                    <th>Country</th>
+                    <th>Order Qty</th>
+                    <th>CARTON QTY</th>
+                    <th>GROSS WT</th>
+                    <th>CARTON CBM</th>
+                    <th>CTN Type</th>
+                    <th>Booking ID</th>
+                    <th>Booking Status</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                {% for item in data %}
+                    <tr>
+                        <td>{{ item.get('PO_num', '') }}</td>
+                        <td>{{ item.get('Plan_HOD', '') }}</td>
+                        <td>{{ item.get('Country', '') }}</td>
+                        <td>{{ item.get('Order_Qty', '') }}</td>
+                        <td>{{ item.get('CARTON_QTY', '') }}</td>
+                        <td>{{ item.get('GROSS_WT', '') }}</td>
+                        <td>{{ item.get('CARTON_CBM', '') }}</td>
+                        <td>{{ item.get('CTN_Type', '') }}</td>
+                        <td>{{ item.get('Booking_id', '') }}</td>
+                        <td>{{ item.get('Booking_status', '') }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="10" class="text-center">No data available</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+</div>
+</body>
+</html>
