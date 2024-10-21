@@ -251,7 +251,7 @@ def convert_date_to_numeric(date_string):
 def initiate_driver(URL):
     try:
         chrome_options = Options()
-        chrome_options.add_argument("--headless")  # Run in headless mode
+        # chrome_options.add_argument("--headless")  # Run in headless mode
         chrome_options.add_argument("--no-sandbox")  # Necessary in some Linux environments
         chrome_options.add_argument("--disable-dev-shm-usage")
 

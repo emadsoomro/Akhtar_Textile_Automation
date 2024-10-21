@@ -70,7 +70,7 @@ def Ammend_Fields(file,username,password):
 
 
     chrome_options = Options()
-    chrome_options.add_argument("--headless")  # Run in headless mode (without GUI)
+    # chrome_options.add_argument("--headless")  # Run in headless mode (without GUI)
     chrome_options.add_argument("--no-sandbox")  # Disable the sandbox for security reasons
     chrome_options.add_argument("--disable-dev-shm-usage")  # Disable the use of /dev/shm
     chrome_options.add_argument("--disable-gpu")  # Disable GPU acceleration

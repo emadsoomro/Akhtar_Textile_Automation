@@ -1,0 +1,3 @@
+{
+    "database_url" : "postgresql://saim:R2_RkmUt3xc59Gjzuhn33A@joking-egret-7111.8nk.cockroachlabs.cloud:26257/defaultdb?sslmode=require"
+}

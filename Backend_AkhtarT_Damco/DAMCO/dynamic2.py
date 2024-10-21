@@ -21,7 +21,7 @@ from psycopg2 import sql
 import os
 from dotenv import load_dotenv
 import traceback
-import sys
+
 
 
 service=Service(ChromeDriverManager().install())
@@ -169,7 +169,7 @@ def Automate(file, username, password):
     final_df_failed = pd.DataFrame()
 
     chrome_options = Options()
-    chrome_options.add_argument("--headless")  # Run in headless mode (without GUI)
+    # chrome_options.add_argument("--headless")  # Run in headless mode (without GUI)
     chrome_options.add_argument("--no-sandbox")  # Disable the sandbox for security reasons
     chrome_options.add_argument("--disable-dev-shm-usage")  # Disable the use of /dev/shm
     chrome_options.add_argument("--disable-gpu")  # Disable GPU acceleration
