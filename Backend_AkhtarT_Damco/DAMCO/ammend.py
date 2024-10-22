@@ -26,7 +26,7 @@ import traceback
 
 load_dotenv()
 
-service=Service(ChromeDriverManager().install())
+# service=Service(ChromeDriverManager().install())
 def get_base_path():
     if getattr(sys, 'frozen', False):
         return sys._MEIPASS
@@ -70,7 +70,7 @@ def Ammend_Fields(file,username,password):
 
 
     chrome_options = Options()
-    # chrome_options.add_argument("--headless")  # Run in headless mode (without GUI)
+    chrome_options.add_argument("--headless")  # Run in headless mode (without GUI)
     chrome_options.add_argument("--no-sandbox")  # Disable the sandbox for security reasons
     chrome_options.add_argument("--disable-dev-shm-usage")  # Disable the use of /dev/shm
     chrome_options.add_argument("--disable-gpu")  # Disable GPU acceleration
@@ -107,7 +107,7 @@ def Ammend_Fields(file,username,password):
     dict_data = []
     for index,df in data.iterrows():
         data_dict = {"PO_num": "", "Plan_HOD": "", "Country": "", "Order_Qty": "", "GROSS_WT": "", "CARTON_QTY": "",
-                     "CARTON_CBM": "", "CTN_Type": "", "Booking_id": "", "Booking_status": ""}
+                     "CARTON_CBM": "", "CTN_Type": "", "booking_id": "", "booking_status": ""}
         final_df = pd.DataFrame()
         try:
             
@@ -318,7 +318,6 @@ def Ammend_Fields(file,username,password):
             print(Fore.GREEN+"->"*3,Fore.GREEN+"Updating data"+Style.RESET_ALL)
             insert_data(conn, cursor, data_to_insert,'success')
             print(Fore.GREEN+"->"*3,Fore.GREEN+"Data updated successfully"+Style.RESET_ALL)
-            final_df = pd.concat([final_df, df], axis=1)
             print(Fore.GREEN+"->"*3,Fore.GREEN+"Success"+Style.RESET_ALL)
             print(Fore.MAGENTA+"->"*3,Fore.MAGENTA+"-"*10,Style.RESET_ALL)
 
@@ -329,23 +328,22 @@ def Ammend_Fields(file,username,password):
             df['booking_status'] = "failed" 
             df['Booking id'] = '-'
             print(Fore.RED+"->"*3,Fore.RED+"Failed"+Style.RESET_ALL)
-            final_df = pd.concat([final_df, df], axis=1)
-
             print("-"*10)
             continue
+
         except Exception as e:
             print(str(e))
             traceback.print_exc()
             df['booking_status'] = "failed" 
             df['Booking id'] = '-'
             print(Fore.RED+"->"*3,Fore.RED+"Failed"+Style.RESET_ALL)
-            final_df = pd.concat([final_df, df], axis=1)
             print("-"*10)
             continue
 
+        final_df = pd.concat([final_df, df], axis=1)
         final_df_transpose = final_df.T
         final_df_dict = final_df_transpose.to_dict(orient="records")[0]
-        data_dict.update({"PO_num": final_df_dict['PO#'], "Plan_HOD":final_df_dict["Plan-HOD"], "Country": final_df_dict["Country"], "Order_Qty":final_df_dict["Order Qty"], "GROSS_WT" : final_df_dict["GROSS WT"], "CARTON_QTY": final_df_dict["CARTON QTY"], "CARTON_CBM": final_df_dict["CARTON CBM"], "CTN_Type":final_df_dict["CTN Type"], "Booking_id": final_df_dict["Booking id"], "Booking_status": final_df_dict["booking_status"]})
+        data_dict.update({"PO_num": final_df_dict['PO#'], "Plan_HOD":final_df_dict["Plan-HOD"], "Country": final_df_dict["Country"], "Order_Qty":final_df_dict["Order Qty"], "GROSS_WT" : final_df_dict["GROSS WT"], "CARTON_QTY": final_df_dict["CARTON QTY"], "CARTON_CBM": final_df_dict["CARTON CBM"], "CTN_Type":final_df_dict["CTN Type"], "booking_id": final_df_dict["Booking id"], "booking_status": final_df_dict["booking_status"]})
         dict_data.append(data_dict)
 
     driver.quit()

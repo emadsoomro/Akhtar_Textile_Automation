@@ -1,7 +1,7 @@
 version: '3'
 services:
   web:
-    image: "emadsoomro/akhtar-automation-app:v2.0"
+    image: "emadsoomro/akhtar-automation-app:v1.0"
     command: uvicorn Apis.Akhtar_apis:app --host 0.0.0.0 --port 8000
     ports:
       - "8000:8000"

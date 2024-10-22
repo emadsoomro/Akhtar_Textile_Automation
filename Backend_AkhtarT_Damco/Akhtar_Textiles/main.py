@@ -22,7 +22,7 @@ from dotenv import load_dotenv
 import sys
 
 
-service = Service(ChromeDriverManager().install())
+# service = Service(ChromeDriverManager().install())
 with open(r"database.json",'r') as database:
     database_cred = json.load(database)
 
@@ -251,12 +251,12 @@ def convert_date_to_numeric(date_string):
 def initiate_driver(URL):
     try:
         chrome_options = Options()
-        # chrome_options.add_argument("--headless")  # Run in headless mode
+        chrome_options.add_argument("--headless")  # Run in headless mode
         chrome_options.add_argument("--no-sandbox")  # Necessary in some Linux environments
         chrome_options.add_argument("--disable-dev-shm-usage")
 
-        # driver = webdriver.Chrome(service=service ,options=chrome_options)
         driver = webdriver.Chrome(options=chrome_options)
+        # driver = webdriver.Chrome(options=chrome_options)
         driver.get(URL)
         print(Fore.GREEN + f"[Info] driver initiated successfully")
         print(Fore.RESET)

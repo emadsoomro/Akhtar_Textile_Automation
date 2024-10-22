@@ -24,7 +24,8 @@ import traceback
 
 
 
-service=Service(ChromeDriverManager().install())
+# service=Service(ChromeDriverManager().install())
+
 # laod envoirement variables
 load_dotenv()
 
@@ -169,7 +170,7 @@ def Automate(file, username, password):
     final_df_failed = pd.DataFrame()
 
     chrome_options = Options()
-    # chrome_options.add_argument("--headless")  # Run in headless mode (without GUI)
+    chrome_options.add_argument("--headless")  # Run in headless mode (without GUI)
     chrome_options.add_argument("--no-sandbox")  # Disable the sandbox for security reasons
     chrome_options.add_argument("--disable-dev-shm-usage")  # Disable the use of /dev/shm
     chrome_options.add_argument("--disable-gpu")  # Disable GPU acceleration
@@ -177,8 +178,8 @@ def Automate(file, username, password):
     chrome_options.add_argument("--remote-debugging-port=9222")  # Enable remote debugging
     chrome_options.add_argument("--disable-setuid-sandbox")  # Disable sandboxing
     chrome_options.add_argument("--window-size=1920,1080")
+    # driver = webdriver.Chrome(options=chrome_options)
     driver = webdriver.Chrome(options=chrome_options)
-    # driver = webdriver.Chrome(service=service,options=chrome_options)
     # driver = webdriver.Chrome()
 
     driver.get("https://auth.damco.com/adfs/ls/?wtrealm=https%3A%2F%2Fportal.damco.com&wctx=WsFedOwinState%3DclUNwkNUP4dpiVAR1vBCtUw6PO0n1IdLnSzMvQIIahHiM5jw7bnM1i2W9bgWqEHiqJv0vURH11fUgH0T2bI4Ldn9clIwiH17_zsNz9TN0eh1xHQLEkPZ7RW9GtRMhvKeVb78R-6cSvuxKdlD7UzvO_hdhYv_dP-c15p-EL_jLfk&wa=wsignin1.0")
@@ -205,7 +206,7 @@ def Automate(file, username, password):
     for index,df in data.iterrows():
         if True:
             data_dict = {"PO_num": "", "Plan_HOD": "", "Country": "", "Order_Qty": "", "GROSS_WT": "", "CARTON_QTY": "",
-                         "CARTON_CBM": "", "CTN_Type": "", "Booking_id": "", "Booking_status": ""}
+                         "CARTON_CBM": "", "CTN_Type": "", "booking_id": "", "booking_status": ""}
             final_df = pd.DataFrame()
             try:
                 df = df[['PO#','Plan-HOD','Country','CARTON QTY','Order Qty','CTN Type','CARTON CBM','GROSS WT']]
@@ -455,12 +456,11 @@ def Automate(file, username, password):
                 data_to_insert = (
                     str(df['PO#']),str(df['Plan-HOD']),str(df['Country']),
                     str(df['Order Qty']),str(df['GROSS WT']),str(df['CARTON QTY']),
-                    str(df['CARTON CBM']),str(df['CTN Type']),df['Booking_id'],df['booking_status'],dt.today()
+                    str(df['CARTON CBM']),str(df['CTN Type']),df['booking_id'],df['booking_status'],dt.today()
                 )
                 final_df = pd.concat([final_df, df], axis=1)
                 print(Fore.GREEN+"->"*3,Fore.GREEN+"Success"+Style.RESET_ALL)
                 print(Fore.GREEN+"->"*3,Fore.GREEN+"Inserting in database"+Style.RESET_ALL)
-                final_df = pd.concat([final_df, df], axis=1)
                 # final_df = final_df.T
                 insert_data(conn, cursor, data_to_insert,'success')
                 if str(df['PO#']) in fld_po_lst:
@@ -479,10 +479,9 @@ def Automate(file, username, password):
                 data_to_insert = (
                     str(df['PO#']),str(df['Plan-HOD']),str(df['Country']),
                     str(df['Order Qty']),str(df['GROSS WT']),str(df['CARTON QTY']),
-                    str(df['CARTON CBM']),str(df['CTN Type']),df['Booking_id'],df['booking_status'],dt.today()
+                    str(df['CARTON CBM']),str(df['CTN Type']),df['booking_id'],df['booking_status'],dt.today()
                 )
                 insert_data(conn, cursor, data_to_insert,'failed')
-                final_df = pd.concat([final_df, df], axis=1)
                 # final_df = final_df.T
 
                 print(Fore.MAGENTA+"->"*3,Fore.MAGENTA+"-"*10,Style.RESET_ALL)
@@ -496,22 +495,22 @@ def Automate(file, username, password):
                 data_to_insert = (
                     str(df['PO#']),str(df['Plan-HOD']),str(df['Country']),
                     str(df['Order Qty']),str(df['GROSS WT']),str(df['CARTON QTY']),
-                    str(df['CARTON CBM']),str(df['CTN Type']),df['Booking_id'],df['booking_status'],dt.today()
+                    str(df['CARTON CBM']),str(df['CTN Type']),df['booking_id'],df['booking_status'],dt.today()
                 )
                 print(data_to_insert)
                 insert_data(conn, cursor,data_to_insert,'failed')
-                final_df = pd.concat([final_df, df], axis=1)
-
                 print(Fore.MAGENTA+"->"*3,Fore.MAGENTA+"-"*10,Style.RESET_ALL)
                 continue
+
+            final_df = pd.concat([final_df, df], axis=1)
             final_df_transpose = final_df.T
             final_df_dict = final_df_transpose.to_dict(orient="records")[0]
             data_dict.update({"PO_num": final_df_dict['PO#'], "Plan_HOD": final_df_dict["Plan-HOD"],
                               "Country": final_df_dict["Country"], "Order_Qty": final_df_dict["Order Qty"],
                               "GROSS_WT": final_df_dict["GROSS WT"], "CARTON_QTY": final_df_dict["CARTON QTY"],
                               "CARTON_CBM": final_df_dict["CARTON CBM"], "CTN_Type": final_df_dict["CTN Type"],
-                              "Booking_id": final_df_dict["Booking id"],
-                              "Booking_status": final_df_dict["booking_status"]})
+                              "booking_id": final_df_dict["booking_id"],
+                              "booking_status": final_df_dict["booking_status"]})
             dict_data.append(data_dict)
     driver.quit()
 
