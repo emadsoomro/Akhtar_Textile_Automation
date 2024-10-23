@@ -485,7 +485,7 @@ def Automate(file, username, password):
                 # final_df = final_df.T
 
                 print(Fore.MAGENTA+"->"*3,Fore.MAGENTA+"-"*10,Style.RESET_ALL)
-                continue
+                pass
             except Exception as e:
                 traceback.print_exc()
                 print(str(e))
@@ -500,7 +500,7 @@ def Automate(file, username, password):
                 print(data_to_insert)
                 insert_data(conn, cursor,data_to_insert,'failed')
                 print(Fore.MAGENTA+"->"*3,Fore.MAGENTA+"-"*10,Style.RESET_ALL)
-                continue
+                pass
 
             final_df = pd.concat([final_df, df], axis=1)
             final_df_transpose = final_df.T

@@ -327,18 +327,32 @@ def Ammend_Fields(file,username,password):
             print("Record not found.")
             df['booking_status'] = "failed" 
             df['Booking id'] = '-'
+            data_to_insert = (
+                str(df['PO#']), str(df['Plan-HOD']), str(df['Country']),
+                str(df['Order Qty']), str(df['GROSS WT']), str(df['CARTON QTY']),
+                str(df['CARTON CBM']), str(df['CTN Type']), df['Booking id'], df['booking_status'],
+                datetime.date.today()
+            )
+            insert_data(conn, cursor, data_to_insert, 'failed')
             print(Fore.RED+"->"*3,Fore.RED+"Failed"+Style.RESET_ALL)
             print("-"*10)
-            continue
+            pass
 
         except Exception as e:
             print(str(e))
             traceback.print_exc()
             df['booking_status'] = "failed" 
             df['Booking id'] = '-'
+            data_to_insert = (
+                str(df['PO#']), str(df['Plan-HOD']), str(df['Country']),
+                str(df['Order Qty']), str(df['GROSS WT']), str(df['CARTON QTY']),
+                str(df['CARTON CBM']), str(df['CTN Type']), df['Booking id'], df['booking_status'],
+                datetime.date.today()
+            )
+            insert_data(conn, cursor, data_to_insert, 'failed')
             print(Fore.RED+"->"*3,Fore.RED+"Failed"+Style.RESET_ALL)
             print("-"*10)
-            continue
+            pass
 
         final_df = pd.concat([final_df, df], axis=1)
         final_df_transpose = final_df.T
@@ -349,4 +363,5 @@ def Ammend_Fields(file,username,password):
     driver.quit()
 
     return dict_data
+
 
