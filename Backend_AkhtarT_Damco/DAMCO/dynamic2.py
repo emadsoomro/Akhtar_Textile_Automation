@@ -462,10 +462,28 @@ def Automate(file, username, password):
                     except Exception as e:
                         print(Fore.CYAN+"Alert not found, continuing forward"+Style.RESET_ALL)
                     WebDriverWait(driver, TIMEOUT).until(EC.invisibility_of_element_located((By.ID, 'progressStatusId')))
-                    WebDriverWait(driver,3).until(EC.text_to_be_present_in_element((By.ID,'MsgDivId'),f'{booking_id} saved successfully'))
-                    time.sleep(2)
-                    #
-                    # WebDriverWait(driver,TIMEOUT).until(EC.presence_of_element_located((By.ID,'MsgDivId')))
+                    saved_msg = ""
+                    try:
+                        WebDriverWait(driver, TIMEOUT).until(EC.presence_of_element_located((By.ID, 'MsgDivId')))
+                        saved_msg = driver.find_element(By.ID, "MsgDivId")
+                        saved_msg = saved_msg.text
+                    except:
+                        time.sleep(3)
+                    if saved_msg == f'{booking_id} saved successfully':
+                        pass
+                    else:
+                        df['booking_status'] = "failed"
+                        df['booking_id'] = '-'
+                        print(Fore.RED + "->" * 3, Fore.RED + "Failed" + Style.RESET_ALL)
+                        data_to_insert = (
+                            str(df['PO#']), str(df['Plan-HOD']), str(df['Country']),
+                            str(df['Order Qty']), str(df['GROSS WT']), str(df['CARTON QTY']),
+                            str(df['CARTON CBM']), str(df['CTN Type']), df['booking_id'], df['booking_status'],
+                            dt.today()
+                        )
+                        insert_data(conn, cursor, data_to_insert, 'failed')
+
+                        print(Fore.MAGENTA + "->" * 3, Fore.MAGENTA + "-" * 10, Style.RESET_ALL)
 
 
                     print(Fore.GREEN+'Booking Fininsed....!!!'+Style.RESET_ALL)

@@ -7,16 +7,16 @@ from Backend_AkhtarT_Damco.DAMCO.ammend import Ammend_Fields
 class Damco_automation:
     try:
         ret=[]
-        def gui_execute(self, file_path,username, password, Title):
+        def gui_execute(self, file,username, password, Title):
             final_data = {}
             if Title == "AT_execute":
-                self.file_entry_AT = file_path
+                self.file_entry_AT = file
                 self.username_AT = username
                 self.password_AT = password
                 final_data = self.execute_bot()
 
             else:
-                self.file_entry_DAMCO = file_path
+                self.file_entry_DAMCO = file
                 self.username_DAMCO = username
                 self.password_DAMCO = password
 
