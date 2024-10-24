@@ -251,9 +251,15 @@ def convert_date_to_numeric(date_string):
 def initiate_driver(URL):
     try:
         chrome_options = Options()
-        chrome_options.add_argument("--headless")  # Run in headless mode
-        chrome_options.add_argument("--no-sandbox")  # Necessary in some Linux environments
-        chrome_options.add_argument("--disable-dev-shm-usage")
+        # chrome_options.add_argument("--headless")  # Run in headless mode (without GUI)
+        chrome_options.add_argument("--incognito")
+        chrome_options.add_argument("--no-sandbox")  # Disable the sandbox for security reasons
+        chrome_options.add_argument("--disable-dev-shm-usage")  # Disable the use of /dev/shm
+        chrome_options.add_argument("--disable-gpu")  # Disable GPU acceleration
+        chrome_options.add_argument("--disable-software-rasterizer")  # Disable software rasterizer
+        chrome_options.add_argument("--remote-debugging-port=9222")  # Enable remote debugging
+        chrome_options.add_argument("--disable-setuid-sandbox")  # Disable sandboxing
+        chrome_options.add_argument("--window-size=1920,1080")
 
         driver = webdriver.Chrome(options=chrome_options)
         # driver = webdriver.Chrome(options=chrome_options)
