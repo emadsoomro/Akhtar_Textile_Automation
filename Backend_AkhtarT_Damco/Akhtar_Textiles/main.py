@@ -21,9 +21,11 @@ import os
 from dotenv import load_dotenv
 import sys
 
+database_path = os.getcwd()+"\database.json"
 
 # service = Service(ChromeDriverManager().install())
-with open(r"database.json",'r') as database:
+# with open(r"database.json",'r') as database:
+with open(fr"{database_path}",'r') as database:
     database_cred = json.load(database)
 
 def failed_po(cursor):

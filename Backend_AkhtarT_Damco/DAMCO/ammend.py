@@ -15,7 +15,7 @@ import json
 import math as m 
 from colorama import Fore, Style
 from datetime import datetime
-from dynamic2 import IdentifyPort,insert_data
+from .dynamic2 import IdentifyPort,insert_data
 import psycopg2
 from psycopg2 import sql
 import sys
@@ -48,7 +48,7 @@ def Ammend_Fields(file,username,password):
     TIMEOUT = 30 
     file = file; username=username; password=password
 
-    print(f"[INFO] Reading Data From {file}")
+    print(f"[INFO] Reading Data From {file.filename}")
 
     dtype_dict = {
     'numerical_column': float,
@@ -65,7 +65,7 @@ def Ammend_Fields(file,username,password):
         'RA-12':"22x14.5x12-RA12",
         'RA-6':"22x14.5x6-RA6",
     }
-    data = pd.read_excel(file,dtype=dtype_dict)
+    data = pd.read_excel(file.file,dtype=dtype_dict)
     # print(data.columns)
 
 
@@ -167,7 +167,7 @@ def Ammend_Fields(file,username,password):
                     str(df['PO#']), str(df['Plan-HOD']), str(df['Country']),
                     str(df['Order Qty']), str(df['GROSS WT']), str(df['CARTON QTY']),
                     str(df['CARTON CBM']), str(df['CTN Type']), df['Booking id'], df['booking_status'],
-                    datetime.date.today()
+                    datetime.now().isoformat()
                 )
                 insert_data(conn, cursor, data_to_insert, 'failed')
                 print(Fore.RED + "->" * 3, Fore.RED + "Failed" + Style.RESET_ALL)
@@ -326,7 +326,7 @@ def Ammend_Fields(file,username,password):
             data_to_insert = (
                     str(df['PO#']),str(df['Plan-HOD']),str(df['Country']),
                     str(df['Order Qty']),str(df['GROSS WT']),str(df['CARTON QTY']),
-                    str(df['CARTON CBM']),str(df['CTN Type']),df['Booking id'],df['booking_status'],datetime.date.today()
+                    str(df['CARTON CBM']),str(df['CTN Type']),df['Booking id'],df['booking_status'],datetime.now().isoformat()
                 )
             print(Fore.GREEN+"->"*3,Fore.GREEN+"Updating data"+Style.RESET_ALL)
             insert_data(conn, cursor, data_to_insert,'success')
@@ -344,7 +344,7 @@ def Ammend_Fields(file,username,password):
                 str(df['PO#']), str(df['Plan-HOD']), str(df['Country']),
                 str(df['Order Qty']), str(df['GROSS WT']), str(df['CARTON QTY']),
                 str(df['CARTON CBM']), str(df['CTN Type']), df['Booking id'], df['booking_status'],
-                datetime.date.today()
+                datetime.now().isoformat()
             )
             insert_data(conn, cursor, data_to_insert, 'failed')
             print(Fore.RED+"->"*3,Fore.RED+"Failed"+Style.RESET_ALL)
@@ -360,7 +360,7 @@ def Ammend_Fields(file,username,password):
                 str(df['PO#']), str(df['Plan-HOD']), str(df['Country']),
                 str(df['Order Qty']), str(df['GROSS WT']), str(df['CARTON QTY']),
                 str(df['CARTON CBM']), str(df['CTN Type']), df['Booking id'], df['booking_status'],
-                datetime.date.today()
+                datetime.now().isoformat()
             )
             insert_data(conn, cursor, data_to_insert, 'failed')
             print(Fore.RED+"->"*3,Fore.RED+"Failed"+Style.RESET_ALL)

@@ -76,7 +76,7 @@ def create_table(conn, cursor):
                 CTN_Type VARCHAR,
                 BOOKING_ID VARCHAR,
                 BOOKING_STATUS VARCHAR,
-                Timestamp DATE)""").format(table_name)
+                Timestamp TIMESTAMP)""").format(table_name)
         
         cursor.execute(create_table_query)
         conn.commit()
@@ -148,7 +148,7 @@ def Automate(file, username, password):
     TIMEOUT = 30
     file = file; username= username; password = password
 
-    print(Fore.LIGHTGREEN_EX+f"[INFO] Reading Data from {file.filename}"+Style.RESET_ALL)
+    # print(Fore.LIGHTGREEN_EX+f"[INFO] Reading Data from {file.filename}"+Style.RESET_ALL)
     dtype_dict = {
     'numerical_column': float,
     'wildcard_column': str
@@ -479,7 +479,7 @@ def Automate(file, username, password):
                             str(df['PO#']), str(df['Plan-HOD']), str(df['Country']),
                             str(df['Order Qty']), str(df['GROSS WT']), str(df['CARTON QTY']),
                             str(df['CARTON CBM']), str(df['CTN Type']), df['booking_id'], df['booking_status'],
-                            dt.today()
+                            datetime.now().isoformat()
                         )
                         insert_data(conn, cursor, data_to_insert, 'failed')
 
@@ -493,7 +493,7 @@ def Automate(file, username, password):
                     data_to_insert = (
                         str(df['PO#']),str(df['Plan-HOD']),str(df['Country']),
                         str(df['Order Qty']),str(df['GROSS WT']),str(df['CARTON QTY']),
-                        str(df['CARTON CBM']),str(df['CTN Type']),df['booking_id'],df['booking_status'],dt.today()
+                        str(df['CARTON CBM']),str(df['CTN Type']),df['booking_id'],df['booking_status'],datetime.now().isoformat()
                     )
                     final_df = pd.concat([final_df, df], axis=1)
                     print(Fore.GREEN+"->"*3,Fore.GREEN+"Success"+Style.RESET_ALL)
@@ -513,7 +513,7 @@ def Automate(file, username, password):
                         str(df['PO#']), str(df['Plan-HOD']), str(df['Country']),
                         str(df['Order Qty']), str(df['GROSS WT']), str(df['CARTON QTY']),
                         str(df['CARTON CBM']), str(df['CTN Type']), df['booking_id'], df['booking_status'],
-                        dt.today()
+                        datetime.now().isoformat()
                     )
                     insert_data(conn, cursor, data_to_insert, 'failed')
                     # final_df = final_df.T
@@ -530,7 +530,7 @@ def Automate(file, username, password):
                 data_to_insert = (
                     str(df['PO#']),str(df['Plan-HOD']),str(df['Country']),
                     str(df['Order Qty']),str(df['GROSS WT']),str(df['CARTON QTY']),
-                    str(df['CARTON CBM']),str(df['CTN Type']),df['booking_id'],df['booking_status'],dt.today()
+                    str(df['CARTON CBM']),str(df['CTN Type']),df['booking_id'],df['booking_status'],datetime.now().isoformat()
                 )
                 insert_data(conn, cursor, data_to_insert,'failed')
                 # final_df = final_df.T
@@ -546,7 +546,7 @@ def Automate(file, username, password):
                 data_to_insert = (
                     str(df['PO#']),str(df['Plan-HOD']),str(df['Country']),
                     str(df['Order Qty']),str(df['GROSS WT']),str(df['CARTON QTY']),
-                    str(df['CARTON CBM']),str(df['CTN Type']),df['booking_id'],df['booking_status'],dt.today()
+                    str(df['CARTON CBM']),str(df['CTN Type']),df['booking_id'],df['booking_status'],datetime.now().isoformat()
                 )
                 print(data_to_insert)
                 insert_data(conn, cursor,data_to_insert,'failed')

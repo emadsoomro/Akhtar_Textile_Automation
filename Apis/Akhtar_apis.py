@@ -17,10 +17,6 @@ app.add_middleware(
     allow_headers=["*"])
 
 
-@app.get("/", response_class=HTMLResponse)
-def root_login(request: Request):
-    return templates.TemplateResponse("index_1.html", {"request": request, "title": "Akhtar Textiles Automation"})
-
 @app.get("/AT-execute")
 async def AT_execute(username: str = Header(...), password: str = Header(...),file_AT: UploadFile = File(...)):
     try:
@@ -33,13 +29,14 @@ async def AT_execute(username: str = Header(...), password: str = Header(...),fi
     return {"result_data" : result_data}
 
 
-@app.get("/damco-execute")
-async def damco_execute(username: str = Header(...), password: str = Header(...),file_damco: UploadFile = File(...)):
+@app.post("/damco-execute")
+async def damco_execute(username: str = Header(...), password: str = Header(...),file: UploadFile = File(...)):
+# async def damco_execute():
     result_data = []
     try:
         import tabs
         damco_automation = tabs.Damco_automation()
-        result_data = damco_automation.gui_execute(file=file_damco, username=username, password=password, Title="Damco_execute")
+        result_data = damco_automation.gui_execute(file=file, username=username, password=password, Title="Damco_execute")
         result_data = convert_timestamps(result_data)
         # return templates.TemplateResponse("damco.html", {"request": request, "data": result_data, "error": ""})
         return {"data": result_data}
@@ -49,7 +46,7 @@ async def damco_execute(username: str = Header(...), password: str = Header(...)
 
 
 
-@app.get("/damco-ammend")
+@app.post("/damco-ammend")
 async def damco_ammend(username: str = Header(...), password: str = Header(...), file_damco: UploadFile = File(...)):
     result_data = []
     try:
@@ -74,3 +71,4 @@ def convert_timestamps(data_list):
                     data[key] = value.isoformat()
                     data_list_updated.append(data)
     return data_list_updated
+
