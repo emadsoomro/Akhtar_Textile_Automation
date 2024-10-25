@@ -106,6 +106,11 @@ def Ammend_Fields(file,username,password):
     print("got login")
     dict_data = []
     for index,df in data.iterrows():
+        try:
+            browser_open_check = driver.title
+        except:
+            print("The browser was closed by the user.")
+            break
         data_dict = {"PO_num": "", "Plan_HOD": "", "Country": "", "Order_Qty": "", "GROSS_WT": "", "CARTON_QTY": "",
                      "CARTON_CBM": "", "CTN_Type": "", "booking_id": "", "booking_status": ""}
         final_df = pd.DataFrame()
