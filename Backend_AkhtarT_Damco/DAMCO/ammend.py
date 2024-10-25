@@ -106,11 +106,7 @@ def Ammend_Fields(file,username,password):
     print("got login")
     dict_data = []
     for index,df in data.iterrows():
-        try:
-            browser_open_check = driver.title
-        except:
-            print("The browser was closed by the user.")
-            break
+
         data_dict = {"PO_num": "", "Plan_HOD": "", "Country": "", "Order_Qty": "", "GROSS_WT": "", "CARTON_QTY": "",
                      "CARTON_CBM": "", "CTN_Type": "", "booking_id": "", "booking_status": ""}
         final_df = pd.DataFrame()
@@ -376,6 +372,12 @@ def Ammend_Fields(file,username,password):
         final_df_dict = final_df_transpose.to_dict(orient="records")[0]
         data_dict.update({"PO_num": final_df_dict['PO#'], "Plan_HOD":final_df_dict["Plan-HOD"], "Country": final_df_dict["Country"], "Order_Qty":final_df_dict["Order Qty"], "GROSS_WT" : final_df_dict["GROSS WT"], "CARTON_QTY": final_df_dict["CARTON QTY"], "CARTON_CBM": final_df_dict["CARTON CBM"], "CTN_Type":final_df_dict["CTN Type"], "booking_id": final_df_dict["Booking id"], "booking_status": final_df_dict["booking_status"]})
         dict_data.append(data_dict)
+
+        try:
+            browser_open_check = driver.title
+        except:
+            print("The browser was closed by the user.")
+            break
 
     driver.quit()
 

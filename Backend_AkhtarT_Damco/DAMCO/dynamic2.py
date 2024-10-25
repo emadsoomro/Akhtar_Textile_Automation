@@ -206,11 +206,7 @@ def Automate(file, username, password):
     dict_data = []
     for index,df in data.iterrows():
         if True:
-            try:
-                browser_open_check = driver.title
-            except:
-                print("The browser was closed by the user.")
-                break
+
             data_dict = {"PO_num": "", "Plan_HOD": "", "Country": "", "Order_Qty": "", "GROSS_WT": "", "CARTON_QTY": "",
                          "CARTON_CBM": "", "CTN_Type": "", "booking_id": "", "booking_status": ""}
             final_df = pd.DataFrame()
@@ -568,6 +564,11 @@ def Automate(file, username, password):
                               "booking_id": final_df_dict["booking_id"],
                               "booking_status": final_df_dict["booking_status"]})
             dict_data.append(data_dict)
+            try:
+                browser_open_check = driver.title
+            except:
+                print("The browser was closed by the user.")
+                break
     driver.quit()
 
     return dict_data
