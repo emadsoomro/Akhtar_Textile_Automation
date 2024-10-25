@@ -21,7 +21,6 @@ from psycopg2 import sql
 import sys
 import os
 from dotenv import load_dotenv
-import datetime
 import traceback
 
 load_dotenv()
@@ -107,6 +106,11 @@ def Ammend_Fields(file,username,password):
     print("got login")
     dict_data = []
     for index,df in data.iterrows():
+        try:
+            browser_open_check = driver.title
+        except:
+            print("The browser was closed by the user.")
+            break
         data_dict = {"PO_num": "", "Plan_HOD": "", "Country": "", "Order_Qty": "", "GROSS_WT": "", "CARTON_QTY": "",
                      "CARTON_CBM": "", "CTN_Type": "", "booking_id": "", "booking_status": ""}
         final_df = pd.DataFrame()
@@ -116,7 +120,7 @@ def Ammend_Fields(file,username,password):
             booking_id = int(df['Booking id'])
             L_NO = int(df['PO#'].split("-")[1])
             date = f"{df['Plan-HOD'].year}-{df['Plan-HOD'].month}-{df['Plan-HOD'].day}"
-            parsed_date = datetime.datetime.strptime(date,'%Y-%m-%d')
+            parsed_date = datetime.strptime(date,'%Y-%m-%d')
             date = parsed_date.strftime("%Y-%m-%d")
             country = df['Country']
             quantity = str(df['Order Qty']) #quantity
