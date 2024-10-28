@@ -15,8 +15,8 @@ import json
 import math as m 
 from colorama import Fore, Style
 from datetime import datetime
-from dynamic2 import IdentifyPort,insert_data, create_table
-# from .dynamic2 import IdentifyPort,insert_data, create_table
+# from dynamic2 import IdentifyPort,insert_data, create_table
+from .dynamic2 import IdentifyPort,insert_data, create_table
 import psycopg2
 from psycopg2 import sql
 import sys
