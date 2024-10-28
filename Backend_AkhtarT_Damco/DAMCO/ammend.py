@@ -15,7 +15,8 @@ import json
 import math as m 
 from colorama import Fore, Style
 from datetime import datetime
-from .dynamic2 import IdentifyPort,insert_data
+from dynamic2 import IdentifyPort,insert_data, create_table
+# from .dynamic2 import IdentifyPort,insert_data, create_table
 import psycopg2
 from psycopg2 import sql
 import sys
@@ -39,10 +40,30 @@ database_url = os.getenv("DATABASE_URL")
 with open(database_file_path,'r') as database:
     database_cred = json.load(database)
 
+
+def delete_row(conn,cursor,po):
+
+    query = """
+            DELETE FROM dmc_ammend_failed_records 
+            WHERE PO_NUMBER = %s
+                """
+    cursor.execute(query,(po,))
+    conn.commit()
+
+
+def failed_po(cursor):
+
+    cursor.execute('select PO_NUMBER from DMC_ammend_failed_records;')
+    po_lst = [row[0] for row in cursor.fetchall()]
+    return po_lst
+
+
 def Ammend_Fields(file,username,password):
     conn = psycopg2.connect(database_cred["database_url"])
     cursor = conn.cursor()
 
+    create_table(conn, cursor, ammend=True)
+    fld_po_lst = failed_po(cursor)
 
     TIMEOUT = 30 
     file = file; username=username; password=password
@@ -169,7 +190,7 @@ def Ammend_Fields(file,username,password):
                     str(df['CARTON CBM']), str(df['CTN Type']), df['Booking id'], df['booking_status'],
                     datetime.now().isoformat()
                 )
-                insert_data(conn, cursor, data_to_insert, 'failed')
+                insert_data(conn, cursor, data_to_insert, 'failed', ammend=True)
                 print(Fore.RED + "->" * 3, Fore.RED + "Failed" + Style.RESET_ALL)
                 print("-" * 10)
                 continue
@@ -329,7 +350,9 @@ def Ammend_Fields(file,username,password):
                     str(df['CARTON CBM']),str(df['CTN Type']),df['Booking id'],df['booking_status'],datetime.now().isoformat()
                 )
             print(Fore.GREEN+"->"*3,Fore.GREEN+"Updating data"+Style.RESET_ALL)
-            insert_data(conn, cursor, data_to_insert,'success')
+            insert_data(conn, cursor, data_to_insert,'success', ammend=True)
+            if str(df['PO#']) in fld_po_lst:
+                delete_row(conn, cursor, str(df['PO#']))
             print(Fore.GREEN+"->"*3,Fore.GREEN+"Data updated successfully"+Style.RESET_ALL)
             print(Fore.GREEN+"->"*3,Fore.GREEN+"Success"+Style.RESET_ALL)
             print(Fore.MAGENTA+"->"*3,Fore.MAGENTA+"-"*10,Style.RESET_ALL)
@@ -346,7 +369,7 @@ def Ammend_Fields(file,username,password):
                 str(df['CARTON CBM']), str(df['CTN Type']), df['Booking id'], df['booking_status'],
                 datetime.now().isoformat()
             )
-            insert_data(conn, cursor, data_to_insert, 'failed')
+            insert_data(conn, cursor, data_to_insert, 'failed', ammend=True)
             print(Fore.RED+"->"*3,Fore.RED+"Failed"+Style.RESET_ALL)
             print("-"*10)
             pass
@@ -362,7 +385,7 @@ def Ammend_Fields(file,username,password):
                 str(df['CARTON CBM']), str(df['CTN Type']), df['Booking id'], df['booking_status'],
                 datetime.now().isoformat()
             )
-            insert_data(conn, cursor, data_to_insert, 'failed')
+            insert_data(conn, cursor, data_to_insert, 'failed', ammend=True)
             print(Fore.RED+"->"*3,Fore.RED+"Failed"+Style.RESET_ALL)
             print("-"*10)
             pass

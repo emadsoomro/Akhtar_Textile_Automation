@@ -59,10 +59,12 @@ def delete_row(conn,cursor,po):
 '''
 function to create table if they already does not exists
 '''
-def create_table(conn, cursor):
+def create_table(conn, cursor, ammend=False):
     # Creates two tables for success and failed records by iterating throught list
     for types in ['success','failed']:
         table_name = sql.Identifier('dmc_{}_records'.format(types))
+        if ammend == True:
+            table_name = sql.Identifier('dmc_ammend_{}_records'.format(types))
         create_table_query = sql.SQL("""
             CREATE TABLE IF NOT EXISTS {} (
                 id SERIAL PRIMARY KEY, 
@@ -84,8 +86,10 @@ def create_table(conn, cursor):
 '''
 Function to insert the data into success and failed tables
 '''
-def insert_data(conn, cursor, data,types):
+def insert_data(conn, cursor, data,types, ammend=False):
     table_name = sql.Identifier('dmc_{}_records'.format(types))
+    if ammend == True:
+        table_name = sql.Identifier('dmc_ammend_{}_records'.format(types))
     insert_query = sql.SQL("""
         INSERT INTO {} (
             PO_NUMBER,
