@@ -17,16 +17,15 @@ app.add_middleware(
     allow_headers=["*"])
 
 
-@app.get("/AT-execute")
-async def AT_execute(username: str = Header(...), password: str = Header(...),file_AT: UploadFile = File(...)):
+@app.get("/nexus-execute")
+async def nexus_execute(username: str = Header(...), password: str = Header(...), mode: str = Header(...),file_AT: UploadFile = File(...)):
     try:
         import tabs
         damco_automation = tabs.Damco_automation()
-        result_data = damco_automation.gui_execute(file=file_AT, username=username, password=password, Title="AT_execute")
+        damco_automation.gui_execute(file=file_AT, username=username, password=password, Title="AT_execute", mode=mode)
     except Exception as e:
         return {"error": (str(e))}
 
-    return {"result_data" : result_data}
 
 
 @app.post("/damco-execute")

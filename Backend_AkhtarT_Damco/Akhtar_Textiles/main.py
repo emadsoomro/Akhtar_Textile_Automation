@@ -4,7 +4,6 @@ from pathlib import Path
 import json
 import traceback
 from datetime import datetime
-from datetime import date as dt
 import numpy as np
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -23,8 +22,6 @@ import sys
 
 database_path = os.getcwd()+"\database.json"
 
-# service = Service(ChromeDriverManager().install())
-# with open(r"database.json",'r') as database:
 with open(fr"{database_path}",'r') as database:
     database_cred = json.load(database)
 
@@ -52,8 +49,8 @@ def create_table(conn, cursor):
                     PO_number BIGINT UNIQUE, 
                     Assign_Equipment_ID VARCHAR(50), 
                     Booking_Number VARCHAR(50), 
-                    Shipment_load_tpye VARCHAR(200), 
-                    Invoive_Number INTEGER, 
+                    Shipment_load_type VARCHAR(200), 
+                    Invoice_Number VARCHAR, 
                     Bill_Waybill VARCHAR(50), 
                     Carrier VARCHAR(50), 
                     Updated_Transload_location_US_only VARCHAR(50), 
@@ -63,7 +60,8 @@ def create_table(conn, cursor):
                     CTN_QTY INTEGER, 
                     Units INTEGER,
                     Route_Number BIGINT,
-                    Timestamp DATE)""").format(table_name)
+                    STATUS VARCHAR,
+                    Timestamp TIMESTAMP)""").format(table_name)
         
         cursor.execute(create_table_query)
         conn.commit()
@@ -74,8 +72,8 @@ def insert_data(conn, cursor, data,types):
                     PO_number, 
                     Assign_Equipment_ID, 
                     Booking_Number, 
-                    Shipment_load_tpye, 
-                    Invoive_Number, 
+                    Shipment_load_type, 
+                    Invoice_Number, 
                     Bill_Waybill, 
                     Carrier, 
                     Updated_Transload_location_US_only, 
@@ -85,12 +83,13 @@ def insert_data(conn, cursor, data,types):
                     CTN_QTY, 
                     Units,
                     Route_Number,
-                    Timestamp) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    STATUS,
+                    timestamp) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
                     ON CONFLICT (PO_number) DO UPDATE
                     SET Assign_Equipment_ID = EXCLUDED.Assign_Equipment_ID,
                     Booking_Number = EXCLUDED.Booking_Number,
-                    Shipment_load_tpye = EXCLUDED.Shipment_load_tpye,
-                    Invoive_Number = EXCLUDED.Invoive_Number,
+                    Shipment_load_type = EXCLUDED.Shipment_load_type,
+                    Invoice_Number = EXCLUDED.Invoice_Number,
                     Bill_Waybill = EXCLUDED.Bill_Waybill,
                     Carrier = EXCLUDED.Carrier,
                     Updated_Transload_location_US_only = EXCLUDED.Updated_Transload_location_US_only,
@@ -100,7 +99,8 @@ def insert_data(conn, cursor, data,types):
                     CTN_QTY = EXCLUDED.CTN_QTY,
                     Units = EXCLUDED.Units,
                     Route_Number = EXCLUDED.Route_Number,
-                    Timestamp = EXCLUDED.Timestamp""").format(table_name)
+                    STATUS = EXCLUDED.STATUS,
+                    timestamp = EXCLUDED.timestamp""").format(table_name)
     
     # Insert data into the table
     cursor.executemany(insert_query, (data))
@@ -115,7 +115,7 @@ def create_directory(relative_path):
     else:
         return 1
 
-def db_lst_append(lst,row,route_number=None):
+def db_lst_append(lst,row,route_number=0):
     try:
         db_data = (
             
@@ -133,7 +133,8 @@ def db_lst_append(lst,row,route_number=None):
             row['CTN QTY'],
             row['UNITS'],
             route_number,
-            dt.today())
+            row['Status'],
+            datetime.now().isoformat())
         lst.append(db_data)
     except KeyError:
         db_data = (
@@ -152,7 +153,8 @@ def db_lst_append(lst,row,route_number=None):
             row['CTN QTY'],
             row['UNITS'],
             route_number,
-            dt.today()
+            row['Status'],
+            datetime.now().isoformat()
         )
         lst.append(db_data)
 
@@ -172,7 +174,8 @@ def append_data(lst,row,route_number=None):
                             'Seal Number':row['Seal Number'],
                             'CTN QTY':row['CTN QTY'],
                             'UNITS':row['UNITS'],
-                            "Root number": route_number  
+                            "Root number": route_number,
+                            "Status": row["Status"]
                         })
     except KeyError:
         lst.append({
@@ -186,32 +189,9 @@ def append_data(lst,row,route_number=None):
                             'Seal Number':row['Seal Number'],
                             'CTN QTY':row['CTN QTY'],
                             'UNITS':row['UNITS'],
-                            "Root number": route_number  
+                            "Root number": route_number,
+                            "Status": row["Status"]
                         })
-
-def create_or_read_excel(file_path):
-    excel_path = Path(file_path)
-
-    if excel_path.exists():
-        # File exists, read it using Pandas
-        print(f"[INFO] Using existing Excel file: {excel_path}")
-        df = pd.read_excel(excel_path)
-        # Add your code to work with the DataFrame 'df' as needed
-        return df
-    else:
-        # File does not exist, create it using Pandas
-        print(f"[INFO] Creating new Excel file: {excel_path}")
-        columns = [
-            'Assign Equipment ID','PO Numbers:','Booking Number',
-            'Shipment Load Type','Invoice Number',"BL / Waybill #",
-            'Select Carrier','Updated Transload Location (US Only)',
-            'Estimated Departure Date','Equipment # Type','Seal Number',
-            'CTN QTY','UNITS'
-            ]
-        df = pd.DataFrame(columns=columns)
-        # Add your code to modify the DataFrame 'df' as needed
-        df.to_excel(excel_path, index=False)
-        return df
 
 def wait_for_element_to_load(driver,by,selector,t=7):
     try:
@@ -264,7 +244,6 @@ def initiate_driver(URL):
         chrome_options.add_argument("--window-size=1920,1080")
 
         driver = webdriver.Chrome(options=chrome_options)
-        # driver = webdriver.Chrome(options=chrome_options)
         driver.get(URL)
         print(Fore.GREEN + f"[Info] driver initiated successfully")
         print(Fore.RESET)
@@ -290,7 +269,7 @@ def login(driver,data):
     except:
         return 'error' 
 
-def form_submit(driver,row,scs_data,fld_data,db_data_lst_fld,db_data_lst_scs,df,mode):
+def form_submit(driver,row,data,db_data_lst_fld,db_data_lst_scs,df,mode):
     wait_for_element_to_load(driver,By.XPATH,"//input[contains(@name,'BookingNumber')]").send_keys(row['Booking Number'])
     time.sleep(1)
     wait_for_element_to_load(driver,By.XPATH,"//select[contains(@name,'LoadType')]").send_keys(row['Shipment Load Type'])
@@ -347,17 +326,9 @@ def form_submit(driver,row,scs_data,fld_data,db_data_lst_fld,db_data_lst_scs,df,
     pkg_count = pkg_count.strip()
     pkg_count = pkg_count.split(".")[0]
     print(pkg_count)
+    root_number = 0
     if int(item_quantity.replace(',','')) == row['UNITS'] and int(pkg_count.replace(',','')) == row['CTN QTY']:
-    # if True:
-        
 
-
-        # wait_for_element_to_load(driver,By.XPATH,"//input[@value='Preview']").click()
-        # wait_for_element_to_load(driver,By.XPATH,"(//input[@value='Cancel'])[1]").click()
-        # iframe = driver.find_element(By.XPATH,"//iframe[contains(@src,'popup')]")
-        # driver.switch_to.frame(iframe)
-        # wait_for_element_to_load(driver,By.XPATH,"//input[@value='Cancel Document']").click()
-        # driver.switch_to.default_content()
         print('appending')
         time.sleep(3)
         
@@ -382,17 +353,18 @@ def form_submit(driver,row,scs_data,fld_data,db_data_lst_fld,db_data_lst_scs,df,
             wait_for_element_to_load(driver,By.XPATH,"(//input[@value='OK'])[1]").click()
         else:
             pass
-        
+        row["Status"]= "success"
         db_lst_append(db_data_lst_scs,row,root_number)
-        append_data(scs_data,row,root_number)
+        append_data(data,row,root_number)
         fld_po_lst = failed_po(cursor)
         if row['PO Numbers:'] in fld_po_lst:
             delete_row(conn,cursor,row['PO Numbers:'])
         print(Fore.GREEN + '[INFO] form filled successfully')
     else:
+        row["Status"]= "failed"
         print(Fore.RED + '[INFO] Quantity and units not matched')
         db_lst_append(db_data_lst_fld,row,root_number)
-        append_data(fld_data,row)
+        append_data(data,row)
 
 
 
@@ -409,37 +381,25 @@ def fill_form(driver,df,mode):
         print(Fore.RED + '[INFO] Error connecting to database',e)
     
     create_table(conn,cursor)
-
-    
     create_directory('result_sheets')
-    
-    try:
 
+    try:
+        df["Status"] = "-"
         df.columns = df.columns.str.strip()  # Remove leading/trailing white spaces
         df.columns = df.columns.str.replace(' ', ' ', regex=True)
         df = df.fillna('')
-        scs_df = create_or_read_excel(r'result_sheets\failed_records.xlsx')
-        fld_df = create_or_read_excel(r'result_sheets\sucess_records.xlsx')
-        failed_data = []
-        success_data = []
+
+        data = []
         db_data_lst_scs = []
         db_data_lst_fld = []
-        dict_data = []
 
         for index,row in df.iterrows():
 
-            # if index > 0:
-            #     break
             try:
                 print(Fore.RESET + f"row {index} started with PO number: {row['PO Numbers:']}")
                 url = "https://network.infornexus.com//en/trade/PackByScan"
                 driver.get(url)
 
-                # create_shipment_href = wait_for_element_to_load(
-                #     driver,By.XPATH,'//a[contains(.,"Create Shipment")]').click()
-
-                # wait_for_element_to_load(driver,By.XPATH,"//button[contains(.,'OK')]").click()
-                # time.sleep(3)
                 shipment_scan_href = wait_for_element_to_load(driver,By.XPATH,'//a[contains(.,"Shipment Scan")]')
                 try:
                     shipment_scan_href.click()
@@ -458,10 +418,7 @@ def fill_form(driver,df,mode):
                 
                 driver.find_element(By.NAME,"poNum").send_keys(row['PO Numbers:'])
                 wait_for_element_to_load(driver,By.XPATH,"//button[contains(.,'OK')]").click()
-                #//a[contains(.,'Select All')]
-                #//button[contains(@class,'page-next')]
-                # results = wait_for_elements_to_load(driver,By.XPATH,"//table[contains(@class,'row')]")
-                # pages = wait_for_element_to_load(driver,By.XPATH,"//button[contains(@class,'page-next')]//parent::em")
+
                 clickable = is_element_clickibale(driver,By.XPATH,"//button[contains(@class,'page-next')]",3)
 
                 wait_for_element_to_load(driver,By.XPATH,"(//div[contains(@class,'hd-checker')])[1]").click()
@@ -476,8 +433,7 @@ def fill_form(driver,df,mode):
 
                 results_selected = wait_for_element_to_load(driver,By.XPATH,"(//td[contains(.,'Packages Selected')]//following-sibling::td)[1]//span").text
                 result_found = wait_for_element_to_load(driver, By.XPATH, f'//div[contains(@id,"{row["PO Numbers:"]}")]', 5)
-                # if str(results_selected) == str(row['CTN QTY']):
-                
+
                 if result_found is None:
                     print(Fore.RED + f'[INFO] Results not for PO number:{row["PO Numbers:"]}')
                     print(Fore.RESET)
@@ -485,8 +441,6 @@ def fill_form(driver,df,mode):
                     print(Fore.RESET)
                     home = driver.find_element(By.XPATH,"(//a[@id='navmenu__home'])[1]").get_attribute('href')
                     driver.get(home)
-                    # pr_scan_ship_href = wait_for_element_to_load(driver,By.ID,"navmenu__inprogressmanifestsprintscanship").get_attribute('href')
-                    # driver.get(pr_scan_ship_href)
 
                     url = "https://network.infornexus.com//en/trade/PackByScan"
                     driver.get(url)
@@ -504,28 +458,21 @@ def fill_form(driver,df,mode):
                     wait_for_element_to_load(driver,By.XPATH,"(//button[contains(.,'Create Shipment')])[1]").click()
                     print(Fore.GREEN + f'[INFO] Moving to Next PO')
                     print(Fore.RESET)
-                    # form_submit(driver,row,success_data,failed_data,db_data_lst_fld,db_data_lst_scs,df,mode)
                     continue
                 
 
-                # if (str(results_selected) == str(row['CTN QTY'])) and result_found is not None:
                 if (str(results_selected) == str(row['CTN QTY'])):
                     if result_found is not None:
                         time.sleep(2)
                         wait_for_element_to_load(driver,By.XPATH,"(//button[contains(.,'Assign Equipment ID')])[1]").click()
-                        # time.sleep(2)
                         wait_for_element_to_load(driver,By.XPATH,"//form[contains(.,'Container/Equipment #:')]//input").send_keys(row['Assign Equipment ID'])
-                        # time.sleep(2)
                         wait_for_element_to_load(driver,By.XPATH,"//button[contains(.,'Apply')]").click()
 
                         try:
-
                             wait_for_element_to_load(driver,By.XPATH,'(//button[contains(.,"OK")])[2]',2).click()
-                            # time.sleep(2)
+
                         except :
                             pass
-                            # time.sleep(2)
-
 
                         time.sleep(2)
                         home = driver.find_element(By.XPATH,"(//a[@id='navmenu__home'])[1]").get_attribute('href')
@@ -545,64 +492,35 @@ def fill_form(driver,df,mode):
                         wait_for_element_to_load(driver,By.XPATH,"//button[contains(.,'OK')]").click()
                         wait_for_element_to_load(driver,By.XPATH,"(//div[contains(@class,'hd-checker')])[1]").click()
                         wait_for_element_to_load(driver,By.XPATH,"(//button[contains(.,'Create Shipment')])[1]").click()
-                        # print(row['Booking Number'],row['Shipment Load Type'],
-                        #       row['Invoice Number'],row['BL / Waybill #'],row['Select Carrier'],
-                        #       row['Updated Transload Location (US Only)'],row['Estimated Departure Date'],
-                        #       row['Equipment # Type'],row['Seal Number'])
                         print(Fore.GREEN + f'[INFO] Filling form')
                         print(Fore.RESET)
-                        form_submit(driver,row,success_data,failed_data,db_data_lst_fld,db_data_lst_scs,df,mode)
+                        form_submit(driver,row,data,db_data_lst_fld,db_data_lst_scs,df,mode)
                         continue
                     else:
                         keep_open(driver)
-                        print(Fore.RED + f'[INFO] Reaults didnt matched for PO number:{row["PO Numbers:"]}')
+                        print(Fore.RED + f'[INFO] Results didnt matched for PO number:{row["PO Numbers:"]}')
                         print(Fore.RESET)
-                        # append_data(failed_data,row)
+
                     
             except Exception as e:
                 print(Fore.RED + f'[INFO] error filling the form',e)
-                append_data(failed_data,row)
+                append_data(data,row)
+                row["Status"] = "failed"
+                db_lst_append(db_data_lst_fld, row)
                 print(traceback.format_exc())
                 print(Fore.RESET)
                 
         try:
-            scs_df_new = pd.DataFrame(success_data)
-            # print(scs_df_new)
-            fld_df_new = pd.DataFrame(failed_data)
-            # print(fld_df_new)
             insert_data(conn,cursor,db_data_lst_scs,'success')
             insert_data(conn,cursor,db_data_lst_fld,'failed')
 
-            scs_df = pd.concat([scs_df,scs_df_new],ignore_index=True)
-            scs_df = scs_df.drop_duplicates()
-            row_data = scs_df.to_dict(orient='records')[0]
-            dict_data.append(row_data)
-
-            fld_df = pd.concat([fld_df,fld_df_new],ignore_index=True)
-            fld_df = fld_df.drop_duplicates()
-            row_data = fld_df.to_dict(orient='records')[0]
-            dict_data.append(row_data)
-            return dict_data
         except PermissionError:
             print(Fore.YELLOW + '[INFO] Please close the results sheets before executing BOT')
             print(Fore.RESET)
     except NoSuchWindowException:
         print(Fore.RED + f'[INFO] browser window closed')
         print(Fore.RESET)
-    # except Exception as e:       
-    #     print(e)
-    #     print('Error filling the form')   
 
-
-                
-
-           
-
-
-
-    # except Exception as e:
-    #     print(e)
-    #     print(traceback.format_exc())
                 
 def keep_open(driver):
     while True:
@@ -611,6 +529,3 @@ def keep_open(driver):
 def quit(driver):
     driver.quit()
 
-
-
-#

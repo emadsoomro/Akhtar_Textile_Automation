@@ -7,13 +7,14 @@ from Backend_AkhtarT_Damco.DAMCO.ammend import Ammend_Fields
 class Damco_automation:
     try:
         ret=[]
-        def gui_execute(self, file,username, password, Title):
+        def gui_execute(self, file,username, password, Title, mode=""):
             final_data = {}
             if Title == "AT_execute":
                 self.file_entry_AT = file
                 self.username_AT = username
                 self.password_AT = password
-                final_data = self.execute_bot()
+
+                self.execute_bot(mode)
 
             else:
                 self.file_entry_DAMCO = file
@@ -26,16 +27,18 @@ class Damco_automation:
                     final_data = self.Ammend_data()
             return final_data
 
-        def execute_bot(self):
+        def execute_bot(self, mode):
             file = self.file_entry_AT
             email = self.username_AT
             pwd  = self.password_AT
 
+            lgn = ""
             login_data = {
             "email" : email,
             "password" : pwd
             }
             df = pd.read_excel(file.file,dtype={'Seal Number': str})
+            # df = pd.read_excel(file,dtype={'Seal Number': str})
             driver = initiate_driver("https://network.infornexus.com/")
             if driver != 'error':
                 lgn = login(driver,login_data)
@@ -44,9 +47,9 @@ class Damco_automation:
                 quit(driver)
 
             elif lgn == 'Login success':
-                print(f'[INFO] Running in {self.mode.get()} mode')
-                ret = fill_form(driver,df,self.mode.get())
-            return ret
+                print(f'[INFO] Running in {mode} mode')
+                fill_form(driver,df,mode)
+
         def execute(self):
             file = self.file_entry_DAMCO
             username = self.username_DAMCO
