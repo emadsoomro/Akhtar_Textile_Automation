@@ -17,7 +17,7 @@ app.add_middleware(
     allow_headers=["*"])
 
 
-@app.get("/nexus-execute")
+@app.post("/nexus-execute")
 async def nexus_execute(username: str = Header(...), password: str = Header(...), mode: str = Header(...),file: UploadFile = File(...)):
     try:
         import tabs
