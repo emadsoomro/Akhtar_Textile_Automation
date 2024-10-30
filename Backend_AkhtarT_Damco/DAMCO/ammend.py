@@ -58,6 +58,7 @@ def failed_po(cursor):
 
 
 def Ammend_Fields(file,username,password):
+    error = ""
     conn = psycopg2.connect(database_cred["database_url"])
     cursor = conn.cursor()
 
@@ -87,6 +88,8 @@ def Ammend_Fields(file,username,password):
     data = pd.read_excel(file.file,dtype=dtype_dict)
     # print(data.columns)
 
+    damco_ammend_col_list =["PO#", "Plan-HOD", "Country", "Order Qty", "GROSS WT", "CARTON QTY",
+                         "CARTON CBM", "CTN Type", "Booking id"]
 
     chrome_options = Options()
     # chrome_options.add_argument("--headless")  # Run in headless mode (without GUI)
@@ -125,62 +128,242 @@ def Ammend_Fields(file,username,password):
         pass
     print("got login")
     dict_data = []
-    for index,df in data.iterrows():
+    if set(data.columns) == set(damco_ammend_col_list):
+        for index,df in data.iterrows():
 
-        data_dict = {"PO_num": "", "Plan_HOD": "", "Country": "", "Order_Qty": "", "GROSS_WT": "", "CARTON_QTY": "",
-                     "CARTON_CBM": "", "CTN_Type": "", "booking_id": "", "booking_status": ""}
-        final_df = pd.DataFrame()
-        try:
-            
-            PO = df['PO#'].split("-")[0]
-            booking_id = int(df['Booking id'])
-            L_NO = int(df['PO#'].split("-")[1])
-            date = f"{df['Plan-HOD'].year}-{df['Plan-HOD'].month}-{df['Plan-HOD'].day}"
-            parsed_date = datetime.strptime(date,'%Y-%m-%d')
-            date = parsed_date.strftime("%Y-%m-%d")
-            country = df['Country']
-            quantity = str(df['Order Qty']) #quantity
-            port_of_discharge = IdentifyPort(country) #port of discharge
-            packages = str(m.floor(df['CARTON QTY'])) #packages and carton count
-            weight = round(float(df['GROSS WT']),1) #gross weight 
-            carton_cbm = df['CARTON CBM'] #measurement 
-            ctn_type = str(df['CTN Type']) #ctn type
-            
-            print("[Extracted Info] \n ")
-            print(f"<PO> : {PO}")
-            print(f"<Line No> : {index}")
-            print(f"<date> : {date}")
-            search = f'ViewSOAction.action?so_number={booking_id}&amp;searchByShipper_id'
-            driver.get("https://booking.damco.com/ShipperPortalWeb/SearchAction.action")
+            data_dict = {"PO_num": "", "Plan_HOD": "", "Country": "", "Order_Qty": "", "GROSS_WT": "", "CARTON_QTY": "",
+                         "CARTON_CBM": "", "CTN_Type": "", "booking_id": "", "booking_status": ""}
+            final_df = pd.DataFrame()
             try:
-                WebDriverWait(driver,TIMEOUT).until(EC.presence_of_element_located((By.ID,"tab_treetab2")))
-            except:
-                pass
-            booking = driver.find_element(by = By.ID,value='tab_treetab2')
-            booking.click()
 
-            WebDriverWait(driver,TIMEOUT).until(EC.presence_of_element_located((By.ID,'searchSO_SO_NO')))
-            po_number = driver.find_element(value='searchSO_SO_NO')
-            po_number.send_keys(booking_id)
-            #print("got search")
-            
-            search_po_number = driver.find_element(value='searchSObtn')
-            search_po_number.send_keys(Keys.ENTER)
-            
-            WebDriverWait(driver,TIMEOUT).until(EC.presence_of_element_located((By.XPATH,f'//a[text()="{booking_id}"]')))
-            a_tag = driver.find_element(by=By.XPATH, value= f'//a[text()="{booking_id}"]')
-            a_tag.click()
+                PO = df['PO#'].split("-")[0]
+                booking_id = int(df['Booking id'])
+                L_NO = int(df['PO#'].split("-")[1])
+                date = f"{df['Plan-HOD'].year}-{df['Plan-HOD'].month}-{df['Plan-HOD'].day}"
+                parsed_date = datetime.strptime(date,'%Y-%m-%d')
+                date = parsed_date.strftime("%Y-%m-%d")
+                country = df['Country']
+                quantity = str(df['Order Qty']) #quantity
+                port_of_discharge = IdentifyPort(country) #port of discharge
+                packages = str(m.floor(df['CARTON QTY'])) #packages and carton count
+                weight = round(float(df['GROSS WT']),1) #gross weight
+                carton_cbm = df['CARTON CBM'] #measurement
+                ctn_type = str(df['CTN Type']) #ctn type
 
-            try:
-                    WebDriverWait(driver,TIMEOUT).until(EC.presence_of_element_located((By.ID,'soEdit')))
-                    so_edit = driver.find_element(by=By.ID, value='soEdit')
+                print("[Extracted Info] \n ")
+                print(f"<PO> : {PO}")
+                print(f"<Line No> : {index}")
+                print(f"<date> : {date}")
+                search = f'ViewSOAction.action?so_number={booking_id}&amp;searchByShipper_id'
+                driver.get("https://booking.damco.com/ShipperPortalWeb/SearchAction.action")
+                try:
+                    WebDriverWait(driver,TIMEOUT).until(EC.presence_of_element_located((By.ID,"tab_treetab2")))
+                except:
+                    pass
+                booking = driver.find_element(by = By.ID,value='tab_treetab2')
+                booking.click()
+
+                WebDriverWait(driver,TIMEOUT).until(EC.presence_of_element_located((By.ID,'searchSO_SO_NO')))
+                po_number = driver.find_element(value='searchSO_SO_NO')
+                po_number.send_keys(booking_id)
+                #print("got search")
+
+                search_po_number = driver.find_element(value='searchSObtn')
+                search_po_number.send_keys(Keys.ENTER)
+
+                WebDriverWait(driver,TIMEOUT).until(EC.presence_of_element_located((By.XPATH,f'//a[text()="{booking_id}"]')))
+                a_tag = driver.find_element(by=By.XPATH, value= f'//a[text()="{booking_id}"]')
+                a_tag.click()
+
+                try:
+                        WebDriverWait(driver,TIMEOUT).until(EC.presence_of_element_located((By.ID,'soEdit')))
+                        so_edit = driver.find_element(by=By.ID, value='soEdit')
+                        time.sleep(0.5)
+                        driver.execute_script("arguments[0].scrollIntoView(true);", so_edit)
+                        time.sleep(0.5)
+                        so_edit.click()
+
+                except:
+                    print(Fore.CYAN+"Edit button not found, Record cannot be edited"+Style.RESET_ALL)
+                    df['booking_status'] = "failed"
+                    df['Booking id'] = '-'
+                    data_to_insert = (
+                        str(df['PO#']), str(df['Plan-HOD']), str(df['Country']),
+                        str(df['Order Qty']), str(df['GROSS WT']), str(df['CARTON QTY']),
+                        str(df['CARTON CBM']), str(df['CTN Type']), df['Booking id'], df['booking_status'],
+                        datetime.now().isoformat()
+                    )
+                    insert_data(conn, cursor, data_to_insert, 'failed', ammend=True)
+                    print(Fore.RED + "->" * 3, Fore.RED + "Failed" + Style.RESET_ALL)
+                    print("-" * 10)
+                    continue
+
+
+                # <------------------------ Header Tab ------------------------>
+                IDS = {
+                    "estmDlvrDtId":str(date), #date
+                    "portOfDischargeGrpId":str(port_of_discharge) #port of discharge
+                    }
+                for key in IDS:
+                    WebDriverWait(driver,TIMEOUT).until(EC.presence_of_element_located((By.ID,key)))
+                    so_edit = driver.find_element(by=By.ID, value= key)
                     time.sleep(0.5)
-                    driver.execute_script("arguments[0].scrollIntoView(true);", so_edit)
-                    time.sleep(0.5)
-                    so_edit.click()
+                    value = so_edit.get_attribute('value') if so_edit.get_attribute('value') is not None else "0"
+                    if str(value) != IDS.get(key):
+                        len_of_value = len(value)
+                        if len_of_value > 0:
+                            for _ in range(len_of_value):
+                                so_edit.send_keys(Keys.BACK_SPACE)
+                                if key == "estmDlvrDtId":
+                                    try:
+                                        pop_up = Alert(driver)
+                                        pop_up.accept()
+                                    except:
+                                        pass
 
-            except:
-                print(Fore.CYAN+"Edit button not found, Record cannot be edited"+Style.RESET_ALL)
+                        so_edit.send_keys(IDS.get(key))
+
+                WebDriverWait(driver,TIMEOUT).until(EC.presence_of_element_located((By.ID,'tab_treetab3')))
+                so_edit = driver.find_element(by=By.ID, value= 'tab_treetab3')
+                so_edit.click()
+
+
+                # <------------------------ Details Tab ------------------------>
+
+                time.sleep(6)
+
+                # --> Quantity
+                WebDriverWait(driver,TIMEOUT).until(EC.presence_of_element_located((By.ID,'bookedQtyId0')))
+                so_edit = driver.find_element(by=By.ID, value= f'bookedQtyId0')
+                value = so_edit.get_attribute('value')
+                if str(value) != str(quantity):
+                    for _ in range(len(value)):
+                        so_edit.send_keys(Keys.BACK_SPACE)
+                    so_edit.send_keys(str(quantity))
+
+
+
+                # --> Packages
+                WebDriverWait(driver,TIMEOUT).until(EC.presence_of_element_located((By.ID,'bookedPackagesId0')))
+                so_edit = driver.find_element(by=By.ID, value= f'bookedPackagesId0')
+                value = str(so_edit.get_attribute('value'))
+                if value != packages:
+                    len_of_value = len(value)
+                    if len_of_value > 0:
+                        for _ in range(len_of_value):
+                            so_edit.send_keys(Keys.BACK_SPACE)
+                    so_edit.send_keys(packages)
+
+                # --> weight
+                WebDriverWait(driver,TIMEOUT).until(EC.presence_of_element_located((By.ID,'bookedWeightId0')))
+                so_edit = driver.find_element(by=By.ID, value= f'bookedWeightId0')
+                value = so_edit.get_attribute('value') if so_edit.get_attribute('value') is not None else "0"
+                value_ = float(value) if value != "" else 0
+                value_ = str(round(value_,1))
+                if value_ != weight:
+                    len_of_value = len(value)
+                    if len_of_value > 0 :
+                        for _ in range(len_of_value):
+                            so_edit.send_keys(Keys.BACK_SPACE)
+                    so_edit.send_keys(str(weight))
+
+
+                # --> Measurement / Carton CBM
+                WebDriverWait(driver,TIMEOUT).until(EC.presence_of_element_located((By.ID,'bookedMeasurementId0')))
+                so_edit = driver.find_element(by=By.ID, value= f'bookedMeasurementId0')
+                value = so_edit.get_attribute('value')
+                value_,carton_cbm = float(value), float(carton_cbm)
+                value_,carton_cbm = str(round(value_,2)), str(round(carton_cbm,2))
+                if value_ != carton_cbm:
+                    len_of_value = len(str(value))
+                    for _ in range(len_of_value):
+                        so_edit.send_keys(Keys.BACK_SPACE)
+                    so_edit.send_keys(str(carton_cbm))
+
+                # --> packages
+                WebDriverWait(driver,TIMEOUT).until(EC.presence_of_element_located((By.NAME,'soDto.soLineDtoList[0].soLineRefDtoList[4].refValue')))
+                so_edit = driver.find_element(by=By.NAME,value="soDto.soLineDtoList[0].soLineRefDtoList[4].refValue")
+                value = so_edit.get_attribute('value')
+                if str(value) != str(packages):
+                    len_of_value = len(value)
+                    for _ in range(len_of_value):
+                        so_edit.send_keys(Keys.BACK_SPACE)
+                    so_edit.send_keys(str(packages))
+
+                types = list(CTN_TYPE.keys())
+                ctn_type = df['CTN Type'] if df['CTN Type'] not in [None, "None", "null"] else ""
+                if ctn_type in types:
+                    dropdown = driver.find_element(by=By.XPATH,value=f"(//select[contains(@id,'dynafield')])[1]")
+                    # dropdown = Select(driver.find_element(by=By.ID,value=f"dynafield_0_0_refValue"))
+                    dropdown = Select(dropdown)
+                    dropdown.select_by_visible_text(CTN_TYPE.get(ctn_type))  #no column in excel
+                    #print("got field1")
+
+                    # dropdown = Select(driver.find_element(by=By.ID,value=f"dynafield_0_1_refValue"))
+                    dropdown = driver.find_element(by=By.XPATH, value=f"(//select[contains(@id,'dynafield')])[2]")
+                    dropdown = Select(dropdown)
+                    dropdown.select_by_visible_text(CTN_TYPE.get(ctn_type))  #no column in excel
+                    # print("got field2")
+                    # print(CTN_TYPE.get(str(df['CTN Type'])))
+                else:
+                    raise ValueError
+
+                # --> Finishing the Booking
+                #input("Continue...")
+                if True:
+                    #WebDriverWait(driver,TIMEOUT).until(EC.presence_of_element_located((By.ID,"tab_treetab1")))
+                    #print("got headers")
+                    WebDriverWait(driver,TIMEOUT).until(EC.presence_of_element_located((By.ID,'SaveAsMenuBtnId')))
+                    save_button = driver.find_element(by=By.ID,value="SaveAsMenuBtnId")
+                    save_button.click()
+                    #print("got save button")
+
+                    WebDriverWait(driver,TIMEOUT).until(EC.presence_of_element_located((By.ID,'SOStatusOption')))
+                    span_tag = driver.find_element(by=By.ID, value = 'SOStatusOption')
+                    draft_and_finished = span_tag.find_elements(by=By.TAG_NAME, value = 'a')
+                    # WebDriverWait(driver,TIMEOUT).until(EC.presence_of_element_located((By.XPATH,"//a[contains(@onclick, 'saveAsBookingOption('draft')')]")))
+                    # button = driver.find_element(by=By.XPATH,value="//a[contains(@onclick, 'saveAsBookingOption('draft')')]")
+
+                    #input("Enter to continue....!")
+                    draft_and_finished[1].click()
+                    #print(draft_and_finished[1].get_attribute("onclick"))
+                    time.sleep(3)
+                    try:
+                        pop_up = Alert(driver)
+                        pop_up.accept()
+                        #print("got popup")
+                    except Exception as e:
+                        print(Fore.CYAN+"Alert not found, continuing forward"+Style.RESET_ALL)
+                    WebDriverWait(driver, TIMEOUT).until(EC.invisibility_of_element_located((By.ID, 'progressStatusId')))
+                    try:
+                        WebDriverWait(driver,3).until(EC.text_to_be_present_in_element((By.ID,'MsgDivId'),f'{booking_id} saved successfully'))
+                    except:
+                        pass
+                time.sleep(2)
+                #time.sleep(2)
+                #
+                # WebDriverWait(driver,TIMEOUT).until(EC.presence_of_element_located((By.ID,'MsgDivId')))
+
+                print(Fore.GREEN+'Booking Fininsed....!!!'+Style.RESET_ALL)
+                print("<Booking ID> : ",Fore.GREEN+str(booking_id),Style.RESET_ALL)
+                df['booking_status'] = "success"
+                data_to_insert = (
+                        str(df['PO#']),str(df['Plan-HOD']),str(df['Country']),
+                        str(df['Order Qty']),str(df['GROSS WT']),str(df['CARTON QTY']),
+                        str(df['CARTON CBM']),str(df['CTN Type']),df['Booking id'],df['booking_status'],datetime.now().isoformat()
+                    )
+                print(Fore.GREEN+"->"*3,Fore.GREEN+"Updating data"+Style.RESET_ALL)
+                insert_data(conn, cursor, data_to_insert,'success', ammend=True)
+                if str(df['PO#']) in fld_po_lst:
+                    delete_row(conn, cursor, str(df['PO#']))
+                print(Fore.GREEN+"->"*3,Fore.GREEN+"Data updated successfully"+Style.RESET_ALL)
+                print(Fore.GREEN+"->"*3,Fore.GREEN+"Success"+Style.RESET_ALL)
+                print(Fore.MAGENTA+"->"*3,Fore.MAGENTA+"-"*10,Style.RESET_ALL)
+
+
+            except NoSuchElementException:
+                traceback.print_exc()
+                print("Record not found.")
                 df['booking_status'] = "failed"
                 df['Booking id'] = '-'
                 data_to_insert = (
@@ -190,218 +373,43 @@ def Ammend_Fields(file,username,password):
                     datetime.now().isoformat()
                 )
                 insert_data(conn, cursor, data_to_insert, 'failed', ammend=True)
-                print(Fore.RED + "->" * 3, Fore.RED + "Failed" + Style.RESET_ALL)
-                print("-" * 10)
-                continue
-                
+                print(Fore.RED+"->"*3,Fore.RED+"Failed"+Style.RESET_ALL)
+                print("-"*10)
+                pass
 
-            # <------------------------ Header Tab ------------------------>
-            IDS = {
-                "estmDlvrDtId":str(date), #date
-                "portOfDischargeGrpId":str(port_of_discharge) #port of discharge
-                }
-            for key in IDS:
-                WebDriverWait(driver,TIMEOUT).until(EC.presence_of_element_located((By.ID,key)))
-                so_edit = driver.find_element(by=By.ID, value= key)
-                time.sleep(0.5)
-                value = so_edit.get_attribute('value') if so_edit.get_attribute('value') is not None else "0"
-                if str(value) != IDS.get(key):
-                    len_of_value = len(value)
-                    if len_of_value > 0:
-                        for _ in range(len_of_value):
-                            so_edit.send_keys(Keys.BACK_SPACE)
-                            if key == "estmDlvrDtId":
-                                try:
-                                    pop_up = Alert(driver)
-                                    pop_up.accept()
-                                except:
-                                    pass
-
-                    so_edit.send_keys(IDS.get(key))
-
-            WebDriverWait(driver,TIMEOUT).until(EC.presence_of_element_located((By.ID,'tab_treetab3')))
-            so_edit = driver.find_element(by=By.ID, value= 'tab_treetab3')
-            so_edit.click()
-
-
-            # <------------------------ Details Tab ------------------------>
-
-            time.sleep(6)
-            
-            # --> Quantity
-            WebDriverWait(driver,TIMEOUT).until(EC.presence_of_element_located((By.ID,'bookedQtyId0')))
-            so_edit = driver.find_element(by=By.ID, value= f'bookedQtyId0')
-            value = so_edit.get_attribute('value')
-            if str(value) != str(quantity):
-                for _ in range(len(value)):
-                    so_edit.send_keys(Keys.BACK_SPACE)
-                so_edit.send_keys(str(quantity))
-
-
-
-            # --> Packages
-            WebDriverWait(driver,TIMEOUT).until(EC.presence_of_element_located((By.ID,'bookedPackagesId0')))
-            so_edit = driver.find_element(by=By.ID, value= f'bookedPackagesId0')
-            value = str(so_edit.get_attribute('value'))
-            if value != packages:
-                len_of_value = len(value)
-                if len_of_value > 0:
-                    for _ in range(len_of_value):
-                        so_edit.send_keys(Keys.BACK_SPACE)
-                so_edit.send_keys(packages)
-            
-            # --> weight
-            WebDriverWait(driver,TIMEOUT).until(EC.presence_of_element_located((By.ID,'bookedWeightId0')))
-            so_edit = driver.find_element(by=By.ID, value= f'bookedWeightId0')
-            value = so_edit.get_attribute('value') if so_edit.get_attribute('value') is not None else "0"
-            value_ = float(value) if value != "" else 0
-            value_ = str(round(value_,1))
-            if value_ != weight:
-                len_of_value = len(value)
-                if len_of_value > 0 :
-                    for _ in range(len_of_value):
-                        so_edit.send_keys(Keys.BACK_SPACE)
-                so_edit.send_keys(str(weight))
-
-
-            # --> Measurement / Carton CBM
-            WebDriverWait(driver,TIMEOUT).until(EC.presence_of_element_located((By.ID,'bookedMeasurementId0')))
-            so_edit = driver.find_element(by=By.ID, value= f'bookedMeasurementId0')
-            value = so_edit.get_attribute('value')
-            value_,carton_cbm = float(value), float(carton_cbm)
-            value_,carton_cbm = str(round(value_,2)), str(round(carton_cbm,2))
-            if value_ != carton_cbm:
-                len_of_value = len(str(value))
-                for _ in range(len_of_value):
-                    so_edit.send_keys(Keys.BACK_SPACE)
-                so_edit.send_keys(str(carton_cbm))
-
-            # --> packages
-            WebDriverWait(driver,TIMEOUT).until(EC.presence_of_element_located((By.NAME,'soDto.soLineDtoList[0].soLineRefDtoList[4].refValue')))
-            so_edit = driver.find_element(by=By.NAME,value="soDto.soLineDtoList[0].soLineRefDtoList[4].refValue")
-            value = so_edit.get_attribute('value')
-            if str(value) != str(packages):
-                len_of_value = len(value)
-                for _ in range(len_of_value):
-                    so_edit.send_keys(Keys.BACK_SPACE)
-                so_edit.send_keys(str(packages))
-
-            types = list(CTN_TYPE.keys())
-            ctn_type = df['CTN Type'] if df['CTN Type'] not in [None, "None", "null"] else ""
-            if ctn_type in types:
-                dropdown = driver.find_element(by=By.XPATH,value=f"(//select[contains(@id,'dynafield')])[1]")
-                # dropdown = Select(driver.find_element(by=By.ID,value=f"dynafield_0_0_refValue"))
-                dropdown = Select(dropdown)
-                dropdown.select_by_visible_text(CTN_TYPE.get(ctn_type))  #no column in excel
-                #print("got field1")
-                
-                # dropdown = Select(driver.find_element(by=By.ID,value=f"dynafield_0_1_refValue"))
-                dropdown = driver.find_element(by=By.XPATH, value=f"(//select[contains(@id,'dynafield')])[2]")
-                dropdown = Select(dropdown)
-                dropdown.select_by_visible_text(CTN_TYPE.get(ctn_type))  #no column in excel
-                # print("got field2")
-                # print(CTN_TYPE.get(str(df['CTN Type'])))
-            else:
-                raise ValueError
-
-            # --> Finishing the Booking 
-            #input("Continue...")
-            if True:
-                #WebDriverWait(driver,TIMEOUT).until(EC.presence_of_element_located((By.ID,"tab_treetab1")))
-                #print("got headers")
-                WebDriverWait(driver,TIMEOUT).until(EC.presence_of_element_located((By.ID,'SaveAsMenuBtnId')))
-                save_button = driver.find_element(by=By.ID,value="SaveAsMenuBtnId")
-                save_button.click()
-                #print("got save button")
-
-                WebDriverWait(driver,TIMEOUT).until(EC.presence_of_element_located((By.ID,'SOStatusOption')))
-                span_tag = driver.find_element(by=By.ID, value = 'SOStatusOption')
-                draft_and_finished = span_tag.find_elements(by=By.TAG_NAME, value = 'a')
-                # WebDriverWait(driver,TIMEOUT).until(EC.presence_of_element_located((By.XPATH,"//a[contains(@onclick, 'saveAsBookingOption('draft')')]")))
-                # button = driver.find_element(by=By.XPATH,value="//a[contains(@onclick, 'saveAsBookingOption('draft')')]")
-                
-                #input("Enter to continue....!")
-                draft_and_finished[1].click()
-                #print(draft_and_finished[1].get_attribute("onclick"))
-                time.sleep(3)
-                try:
-                    pop_up = Alert(driver)
-                    pop_up.accept()
-                    #print("got popup")
-                except Exception as e:
-                    print(Fore.CYAN+"Alert not found, continuing forward"+Style.RESET_ALL)
-                WebDriverWait(driver, TIMEOUT).until(EC.invisibility_of_element_located((By.ID, 'progressStatusId')))
-                try:
-                    WebDriverWait(driver,3).until(EC.text_to_be_present_in_element((By.ID,'MsgDivId'),f'{booking_id} saved successfully'))
-                except:
-                    pass
-            time.sleep(2)
-            #time.sleep(2)
-            #
-            # WebDriverWait(driver,TIMEOUT).until(EC.presence_of_element_located((By.ID,'MsgDivId')))
-
-            print(Fore.GREEN+'Booking Fininsed....!!!'+Style.RESET_ALL)
-            print("<Booking ID> : ",Fore.GREEN+str(booking_id),Style.RESET_ALL)
-            df['booking_status'] = "success" 
-            data_to_insert = (
-                    str(df['PO#']),str(df['Plan-HOD']),str(df['Country']),
-                    str(df['Order Qty']),str(df['GROSS WT']),str(df['CARTON QTY']),
-                    str(df['CARTON CBM']),str(df['CTN Type']),df['Booking id'],df['booking_status'],datetime.now().isoformat()
+            except Exception as e:
+                print(str(e))
+                traceback.print_exc()
+                df['booking_status'] = "failed"
+                df['Booking id'] = '-'
+                data_to_insert = (
+                    str(df['PO#']), str(df['Plan-HOD']), str(df['Country']),
+                    str(df['Order Qty']), str(df['GROSS WT']), str(df['CARTON QTY']),
+                    str(df['CARTON CBM']), str(df['CTN Type']), df['Booking id'], df['booking_status'],
+                    datetime.now().isoformat()
                 )
-            print(Fore.GREEN+"->"*3,Fore.GREEN+"Updating data"+Style.RESET_ALL)
-            insert_data(conn, cursor, data_to_insert,'success', ammend=True)
-            if str(df['PO#']) in fld_po_lst:
-                delete_row(conn, cursor, str(df['PO#']))
-            print(Fore.GREEN+"->"*3,Fore.GREEN+"Data updated successfully"+Style.RESET_ALL)
-            print(Fore.GREEN+"->"*3,Fore.GREEN+"Success"+Style.RESET_ALL)
-            print(Fore.MAGENTA+"->"*3,Fore.MAGENTA+"-"*10,Style.RESET_ALL)
+                insert_data(conn, cursor, data_to_insert, 'failed', ammend=True)
+                print(Fore.RED+"->"*3,Fore.RED+"Failed"+Style.RESET_ALL)
+                print("-"*10)
+                pass
 
-        
-        except NoSuchElementException:
-            traceback.print_exc()
-            print("Record not found.")
-            df['booking_status'] = "failed" 
-            df['Booking id'] = '-'
-            data_to_insert = (
-                str(df['PO#']), str(df['Plan-HOD']), str(df['Country']),
-                str(df['Order Qty']), str(df['GROSS WT']), str(df['CARTON QTY']),
-                str(df['CARTON CBM']), str(df['CTN Type']), df['Booking id'], df['booking_status'],
-                datetime.now().isoformat()
-            )
-            insert_data(conn, cursor, data_to_insert, 'failed', ammend=True)
-            print(Fore.RED+"->"*3,Fore.RED+"Failed"+Style.RESET_ALL)
-            print("-"*10)
-            pass
+            final_df = pd.concat([final_df, df], axis=1)
+            final_df_transpose = final_df.T
+            final_df_dict = final_df_transpose.to_dict(orient="records")[0]
+            data_dict.update({"PO_num": final_df_dict['PO#'], "Plan_HOD":final_df_dict["Plan-HOD"], "Country": final_df_dict["Country"], "Order_Qty":final_df_dict["Order Qty"], "GROSS_WT" : final_df_dict["GROSS WT"], "CARTON_QTY": final_df_dict["CARTON QTY"], "CARTON_CBM": final_df_dict["CARTON CBM"], "CTN_Type":final_df_dict["CTN Type"], "booking_id": final_df_dict["Booking id"], "booking_status": final_df_dict["booking_status"]})
+            dict_data.append(data_dict)
 
-        except Exception as e:
-            print(str(e))
-            traceback.print_exc()
-            df['booking_status'] = "failed" 
-            df['Booking id'] = '-'
-            data_to_insert = (
-                str(df['PO#']), str(df['Plan-HOD']), str(df['Country']),
-                str(df['Order Qty']), str(df['GROSS WT']), str(df['CARTON QTY']),
-                str(df['CARTON CBM']), str(df['CTN Type']), df['Booking id'], df['booking_status'],
-                datetime.now().isoformat()
-            )
-            insert_data(conn, cursor, data_to_insert, 'failed', ammend=True)
-            print(Fore.RED+"->"*3,Fore.RED+"Failed"+Style.RESET_ALL)
-            print("-"*10)
-            pass
-
-        final_df = pd.concat([final_df, df], axis=1)
-        final_df_transpose = final_df.T
-        final_df_dict = final_df_transpose.to_dict(orient="records")[0]
-        data_dict.update({"PO_num": final_df_dict['PO#'], "Plan_HOD":final_df_dict["Plan-HOD"], "Country": final_df_dict["Country"], "Order_Qty":final_df_dict["Order Qty"], "GROSS_WT" : final_df_dict["GROSS WT"], "CARTON_QTY": final_df_dict["CARTON QTY"], "CARTON_CBM": final_df_dict["CARTON CBM"], "CTN_Type":final_df_dict["CTN Type"], "booking_id": final_df_dict["Booking id"], "booking_status": final_df_dict["booking_status"]})
-        dict_data.append(data_dict)
-
-        try:
-            browser_open_check = driver.title
-        except:
-            print("The browser was closed by the user.")
-            break
+            try:
+                browser_open_check = driver.title
+            except:
+                print("The browser was closed by the user.")
+                break
+    else:
+        print(Fore.RED + f'Invalid file format: Headers do not match')
+        print(Fore.RESET)
+        error = "Invalid file format: Headers do not match"
 
     driver.quit()
 
-    return dict_data
+    return error
 

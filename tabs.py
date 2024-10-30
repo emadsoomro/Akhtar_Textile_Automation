@@ -8,13 +8,13 @@ class Damco_automation:
     try:
         ret=[]
         def gui_execute(self, file,username, password, Title, mode=""):
-            final_data = {}
+            error = ""
             if Title == "AT_execute":
                 self.file_entry_AT = file
                 self.username_AT = username
                 self.password_AT = password
 
-                self.execute_bot(mode)
+                error = self.execute_bot(mode)
 
             else:
                 self.file_entry_DAMCO = file
@@ -22,12 +22,13 @@ class Damco_automation:
                 self.password_DAMCO = password
 
                 if Title == "Damco_execute":
-                    final_data = self.execute()
+                    error = self.execute()
                 elif Title == "Damco_ammend":
-                    final_data = self.Ammend_data()
-            return final_data
+                    error = self.Ammend_data()
+            return error
 
         def execute_bot(self, mode):
+            error = ""
             file = self.file_entry_AT
             email = self.username_AT
             pwd  = self.password_AT
@@ -48,8 +49,8 @@ class Damco_automation:
 
             elif lgn == 'Login success':
                 print(f'[INFO] Running in {mode} mode')
-                fill_form(driver,df,mode)
-
+                error = fill_form(driver,df,mode)
+            return error
         def execute(self):
             file = self.file_entry_DAMCO
             username = self.username_DAMCO
@@ -73,3 +74,5 @@ class Damco_automation:
         while True:
             pass
 
+# aut= Damco_automation()
+# aut.gui_execute("C:\\Users\\admin\\Downloads\\Emend Sheet2X - Copy.xlsx", "mrazaa", "atil1985", "Damco_ammend")
