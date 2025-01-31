@@ -328,29 +328,54 @@ def Automate(file, username, password):
                         table = driver.find_element(By.ID, 'LineTableId')
                         rows = table.find_elements(By.TAG_NAME,'tr',)
 
+                        try:
+                            booking_lines = driver.find_elements(By.XPATH, "//tr[@class='LineSig']")
+                        except:
+                            booking_lines = []
+
+                        if len(booking_lines) > 1:
+                            try:
+                                all_booking_lines_checkbox = driver.find_element(By.XPATH,
+                                                                                 "//th[contains(.,'Line No')]/preceding-sibling::th/input[@type='checkbox']")
+                                all_booking_lines_checkbox.click()
+                                time.sleep(0.5)
+                                LI_reference = "000" + LI_reference if len(LI_reference) == 2 else "00" + LI_reference
+                                LI_check_box = driver.find_element(By.XPATH,
+                                                                   f"//input[@value='{LI_reference}']/parent::td/parent::tr/parent::tbody/parent::table/parent::td/preceding-sibling::td[2]/input[1]")
+                                driver.execute_script(
+                                    "arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", LI_check_box)
+                                LI_check_box.click()
+                                delete_btn = driver.find_element(By.XPATH,
+                                                                 "//input[@type='button' and @id = 'deleteButtonId']")
+                                delete_btn.click()
+                                WebDriverWait(driver, TIMEOUT).until(EC.alert_is_present())
+                                Alert(driver).accept()
+                            except:
+                                pass
+
                         #print("="*10)
-                        if len(rows)>1:
-                            ls = []
-                            for r in rows:
-                                LN_TR = r.get_attribute('id')[:5]
-                                if LN_TR == 'LN_TR':
-                                    ls.append(r)
-                            for ind, row in enumerate(ls):
-                                if row.get_attribute('id') == f'LN_TR{ind}':
-                                    id_ = f'EditSOForm_soDto_soLineDtoList_{ind}__liRef'
-                                    WebDriverWait(driver,TIMEOUT).until(EC.presence_of_element_located((By.ID,id_)))
-                                    element = row.find_element(By.ID,id_)
-                                    line_no = element.get_attribute('value')
-                                    #print("-->",line_no)
-                                    if int(line_no) != L_NO:
-                                        detail_box = driver.find_element(by=By.ID,value=f'EditSOForm_soDto_soLineDtoList_{ind}__selected')
-                                        if not detail_box.is_selected():
-                                            detail_box.click()
-                                            #print(f"Line No {line_no}: got selected")
-                                        delete_button = driver.find_element(by = By.ID,value ="deleteButtonId" )
-                                        delete_button.click()
-                                        WebDriverWait(driver,TIMEOUT).until(EC.alert_is_present())
-                                        Alert(driver).accept()
+                        # if len(rows)>1:
+                        #     ls = []
+                        #     for r in rows:
+                        #         LN_TR = r.get_attribute('id')[:5]
+                        #         if LN_TR == 'LN_TR':
+                        #             ls.append(r)
+                        #     for ind, row in enumerate(ls):
+                        #         if row.get_attribute('id') == f'LN_TR{ind}':
+                        #             id_ = f'EditSOForm_soDto_soLineDtoList_{ind}__liRef'
+                        #             WebDriverWait(driver,TIMEOUT).until(EC.presence_of_element_located((By.ID,id_)))
+                        #             element = row.find_element(By.ID,id_)
+                        #             line_no = element.get_attribute('value')
+                        #             #print("-->",line_no)
+                        #             if int(line_no) != L_NO:
+                        #                 detail_box = driver.find_element(by=By.ID,value=f'EditSOForm_soDto_soLineDtoList_{ind}__selected')
+                        #                 if not detail_box.is_selected():
+                        #                     detail_box.click()
+                        #                     #print(f"Line No {line_no}: got selected")
+                        #                 delete_button = driver.find_element(by = By.ID,value ="deleteButtonId" )
+                        #                 delete_button.click()
+                        #                 WebDriverWait(driver,TIMEOUT).until(EC.alert_is_present())
+                        #                 Alert(driver).accept()
                                         #print("got delete button")
                         time.sleep(2)
                         row_index = 0
